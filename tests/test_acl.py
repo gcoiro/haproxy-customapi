@@ -4,6 +4,8 @@ import tempfile
 import pytest
 from unittest import mock
 from app.services.acl import add_acl_to_config, ACLAlreadyExists
+import logging
+logger=logging.getLogger(__name__)
 
 @pytest.fixture
 def copy_test_haproxy_cfg():
@@ -19,7 +21,9 @@ def test_add_new_acl(copy_test_haproxy_cfg):
 
         with open(copy_test_haproxy_cfg) as f:
             contents = f.read()
-
+        logger.info("\n===== Resultado del haproxy.cfg temporal =====")
+        logger.info(contents)
+        logger.info("==============================================\n")
         assert "backend_nuevo" in contents
         assert "hdr(host) -i nuevo.com" in contents
 
