@@ -29,6 +29,16 @@ def test_add_new_acl(copy_test_haproxy_cfg):
 
 def test_conflict_acl(copy_test_haproxy_cfg):
     with mock.patch.dict(os.environ, {"HAPROXY_CFG_PATH": copy_test_haproxy_cfg}):
-        # Asegúrate de que tests/haproxy.cfg contenga example.com ya
-        with pytest.raises(ACLAlreadyExists):
-            add_acl_to_config("example.com", "backend1")
+        # Primero: inserta la ACL una vez correctamente
+        add_acl_to_config("example_new.com", "backend1")
+        try:
+            # Segundo intento: debe lanzar ACLAlreadyExists
+            add_acl_to_config("example_new.com", "backend1")
+        except ACLAlreadyExists:
+            logger.info("✅ ACLAlreadyExists lanzada correctamente para 'example_new.com'")
+            return  # éxito del test
+
+        # Si llegamos aquí, falló porque no se lanzó la excepción
+        pytest.fail("❌ No se lanzó ACLAlreadyExists en la segunda inserción")
+
+
