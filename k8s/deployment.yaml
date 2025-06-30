@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: haproxy-customapi
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: haproxy-customapi
+  template:
+    metadata:
+      labels:
+        app: haproxy-customapi
+    spec:
+      containers:
+        - name: haproxy-customapi
+          image: haproxy-customapi:latest
+          ports:
+            - containerPort: 8000
+          env:
+            - name: HAPROXY_CFG_PATH
+              value: "/usr/local/etc/haproxy/haproxy.cfg"
