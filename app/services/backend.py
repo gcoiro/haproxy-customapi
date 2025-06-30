@@ -1,8 +1,6 @@
 import os
 from typing import List
 
-PLACEHOLDER = "########NOTHING HERE##########"
-
 
 def _load_cfg():
     path = os.environ.get('HAPROXY_CFG_PATH')
@@ -26,15 +24,16 @@ def create_backend(name: str, servers: List[str]) -> bool:
         new_block.append(f"    {srv}\n")
     new_block.append("\n")
 
-    insert_idx = None
-    for i, line in enumerate(lines):
-        if PLACEHOLDER in line:
-            insert_idx = i
-            break
-    if insert_idx is None:
-        lines.extend(new_block)
-    else:
-        lines[insert_idx:insert_idx] = new_block
+    # Buscar el lugar donde insertar el backend
+    insert_idx = len(lines)
+    idx = insert_idx - 1
+
+    # Ir hacia arriba hasta encontrar una línea en blanco (solo "\n")
+    while idx >= 0 and lines[idx].strip() != "":
+        idx -= 1
+    insert_idx = idx + 1
+
+    lines[insert_idx:insert_idx] = new_block
 
     with open(path, 'w', encoding='utf-8') as f:
         f.writelines(lines)
@@ -52,8 +51,7 @@ def _find_backend_block(lines: List[str], name: str):
 
     end = len(lines)
     for j in range(start + 1, len(lines)):
-        stripped = lines[j].strip()
-        if stripped.startswith('backend ') or PLACEHOLDER in stripped:
+        if lines[j].strip().startswith('backend '):
             end = j
             break
     return start, end
